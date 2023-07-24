@@ -1,3 +1,32 @@
+def main():
+    """Основная логика работы бота."""
+    check_tokens()
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    timestamp = int(time.time()) - RETRY_PERIOD
+    error_state = ''
+    while True:
+        try:
+            homework = get_api_answer(timestamp)
+            check_response(homework)
+            message = parse_status(homework)
+            send_message(bot, message)
+        except IndexError as info:
+            message = (f'Не найдено ни одной сданной домашней работы '
+                       f'за период проверки: {info}')
+            logging.info(message)
+        except TypeError as error:
+            send_error_state(bot, error_state, error)
+            return error
+        except Exception as error:
+            message = f'Сбой в работе программы: {error}'
+            send_error_state(bot, error_state, error)
+            return error
+        finally:
+            logging.info(f'Выполнение запроса окончено, следующий повтор '
+                         f'через {RETRY_PERIOD} секунд.')
+            time.sleep(RETRY_PERIOD)
+
+
 def parse_status(homework):
     """
     Извлекает из информации о конкретной домашней работе статус этой работы.
