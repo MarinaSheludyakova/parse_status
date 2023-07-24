@@ -1,0 +1,82 @@
+def parse_status(homework):
+    """
+    Извлекает из информации о конкретной домашней работе статус этой работы.
+
+    В качестве параметра функция получает только один элемент
+    из списка домашних работ. В случае успеха, функция возвращает
+    подготовленную для отправки в Telegram строку, содержащую один
+    из вердиктов словаря HOMEWORK_VERDICTS.
+    """
+    homeworks = homework.get('homeworks')
+    homework_the_first = homeworks[0]
+    homework_name = homework_the_first.get('homework_name')
+    status = homework_the_first.get('status')
+    if (homeworks is not None) and (len(homeworks) > 0 and homeworks[0] is not None):
+        if type(homework_the_first.get('status')) != str:
+            raise TypeError
+        if ((homework_the_first.get('status') is None)
+                or (homework_the_first.get('status') not in HOMEWORK_VERDICTS)
+                or (homework_the_first.get('status') == '')):
+            message = ('Ошибка: получен недокументированный статус '
+                       'домашней работы "{status}".')
+            logg_error_or_critical(logging.error, message, ValueError)
+        status = homework_the_first.get('status')
+        verdict = HOMEWORK_VERDICTS[status]
+        message = (f'Изменился статус проверки работы "{homework_name}". '
+                   f'{verdict}')
+        if type(message) != str:
+            message = ('Ошибка: тип возвращаемого объекта "message" '
+                       'не равен строке.')
+            logg_error_or_critical(logging.error, message, TypeError)
+        return message
+    else:
+        message = ('Не найдено ни одной сданной домашней работы.')
+        logging.info(message)
+
+
+
+
+Результат теста:
+self = <test_bot.TestHomework object at 0x0000028531127880>, homework_module = <module 'homework' from 'C:\\Users\\User\\Desktop\\Study_of_M\\Dev\\homework_bot\\homework.py'>
+
+    def test_parse_status_with_expected_statuses(self, homework_module):
+        func_name = 'parse_status'
+        utils.check_function(
+            homework_module,
+            func_name,
+            self.HOMEWORK_FUNC_WITH_PARAMS_QTY[func_name]
+        )
+
+        test_data = {
+            "id": 123,
+            "homework_name": "Homework test",
+            "reviewer_comment": "Всё нравится",
+            "date_updated": "2020-02-13T14:40:57Z",
+            "lesson_name": "Итоговый проект"
+        }
+        for status_key in self.HOMEWORK_VERDICTS.keys():
+            test_data['status'] = status_key
+
+>           result = homework_module.parse_status(test_data)
+
+tests\test_bot.py:300:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+homework = {'date_updated': '2020-02-13T14:40:57Z', 'homework_name': 'Homework test', 'id': 123, 'lesson_name': 'Итоговый проект', ...}
+
+    def parse_status(homework):
+        """
+        Извлекает из информации о конкретной домашней работе статус этой работы.
+
+        В качестве параметра функция получает только один элемент
+        из списка домашних работ. В случае успеха, функция возвращает
+        подготовленную для отправки в Telegram строку, содержащую один
+        из вердиктов словаря HOMEWORK_VERDICTS.
+        """
+        homeworks = homework.get('homeworks')
+>       homework_the_first = homeworks[0]
+E       TypeError: 'NoneType' object is not subscriptable
+
+homework.py:207: TypeError
+=========================================================================================== short test summary info =========================================================================================== 
+FAILED tests/test_bot.py::TestHomework::test_parse_status_with_expected_statuses - TypeError: 'NoneType' object is not subscriptable
